@@ -2,22 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <format_reader_ptr.h>
-#include <gflags/gflags.h>
-
 #include <algorithm>
-#include <inference_engine.hpp>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <ngraph/ngraph.hpp>
-#include <samples/args_helper.hpp>
-#include <samples/common.hpp>
-#include <samples/slog.hpp>
 #include <string>
 #include <vector>
 
+// clang-format off
+#include <inference_engine.hpp>
+#include <ngraph/ngraph.hpp>
+
+#include <format_reader_ptr.h>
+#include <gflags/gflags.h>
+#include <samples/args_helper.hpp>
+#include <samples/common.hpp>
+#include <samples/slog.hpp>
+
 #include "object_detection_sample_ssd.h"
+// clang-format on
 
 using namespace InferenceEngine;
 
