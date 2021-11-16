@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
         input_info.tensor().set_element_type(ov::element::u8).set_layout(tensor_layout);
         // 3) Here we suppose model has 'NCHW' layout for input
         input_info.network().set_layout("NCHW");
-        // 4) output() with no args assumes a model has a single result
+        // 4) Set output tensor information
         // - output() with no args assumes a model has a single result
         // - precision of tensor is supposed to be 'f32'
         proc.output().tensor().set_element_type(ov::element::f32);
