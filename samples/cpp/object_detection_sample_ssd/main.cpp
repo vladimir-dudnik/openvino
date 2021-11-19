@@ -60,34 +60,28 @@ bool ParseAndCheckCommandLine(int argc, char* argv[]) {
  */
 int main(int argc, char* argv[]) {
     try {
-        /** This sample covers certain topology and cannot be generalized for any
-         * object detection one **/
+        // This sample covers certain topology and cannot be generalized for any
+        // object detection one
         // ------------------------------ Get Inference Engine version
-        // ------------------------------------------------------
         slog::info << "InferenceEngine: " << GetInferenceEngineVersion() << "\n";
 
         // --------------------------- Parsing and validation of input arguments
-        // ---------------------------------
         if (!ParseAndCheckCommandLine(argc, argv)) {
             return 0;
         }
-        // -----------------------------------------------------------------------------------------------------
 
         // ------------------------------ Read input
-        // -----------------------------------------------------------
-        /** This vector stores paths to the processed images **/
+        // This vector stores paths to the processed images
         std::vector<std::string> images;
         parseInputFilesArguments(images);
         if (images.empty())
             throw std::logic_error("No suitable images were found");
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 1. Initialize inference engine core
-        // -------------------------------------
+        // Step 1. Initialize inference engine core
         slog::info << "Loading Inference Engine" << slog::endl;
         Core ie;
+
         // ------------------------------ Get Available Devices
-        // ------------------------------------------------------
         slog::info << "Device info: " << slog::endl;
         slog::info << ie.GetVersions(FLAGS_d) << slog::endl;
 
@@ -98,39 +92,33 @@ int main(int argc, char* argv[]) {
         }
 
         if (!FLAGS_c.empty() && (FLAGS_d == "GPU" || FLAGS_d == "MYRIAD" || FLAGS_d == "HDDL")) {
-            // Config for device plugin custom extension is loaded from an .xml
-            // description
+            // Config for device plugin custom extension is loaded from an .xml description
             ie.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, FLAGS_d);
             slog::info << "Config for " << FLAGS_d << " device plugin custom extension loaded: " << FLAGS_c
                        << slog::endl;
         }
-        // -----------------------------------------------------------------------------------------------------
 
-        // Step 2. Read a model in OpenVINO Intermediate Representation (.xml and
-        // .bin files) or ONNX (.onnx file) format
+        // Step 2. Read a model in OpenVINO Intermediate Representation (.xml and .bin files)
+        // or ONNX (.onnx file) format
         slog::info << "Loading network files:" << slog::endl << FLAGS_m << slog::endl;
 
         /** Read network model **/
         CNNNetwork network = ie.ReadNetwork(FLAGS_m);
-        // -----------------------------------------------------------------------------------------------------
-        // --------------------------- Step 3. Configure input & output
-        // ---------------------------------------------
-        // -------------------------------- Prepare input blobs
-        // --------------------------------------------------
+
+        // Step 3. Configure input & output
+        // Prepare input blobs
         slog::info << "Preparing input blobs" << slog::endl;
 
-        /** Taking information about all topology inputs **/
+        // Taking information about all topology inputs
         InputsDataMap inputsInfo(network.getInputsInfo());
 
-        /**
-         * Some networks have SSD-like output format (ending with DetectionOutput
-         * layer), but having 2 inputs as Faster-RCNN: one for image and one for
-         * "image info".
-         *
-         * Although object_datection_sample_ssd's main task is to support clean SSD,
-         * it could score the networks with two inputs as well. For such networks
-         * imInfoInputName will contain the "second" input name.
-         */
+        // Some networks have SSD-like output format, which is ending with
+        //  DetectionOutput layer, but having 2 inputs, as
+        //  Faster-RCNN-like model, one for image and another one for "image info".
+        //
+        // Although object_datection_sample_ssd's main task is to support clean SSD,
+        // it could score the networks with two inputs as well. For such networks
+        // imInfoInputName will contain the "second" input name.
         if (inputsInfo.size() != 1 && inputsInfo.size() != 2)
             throw std::logic_error("Sample supports topologies only with 1 or 2 inputs");
 
@@ -139,11 +127,10 @@ int main(int argc, char* argv[]) {
         InputInfo::Ptr inputInfo = nullptr;
 
         SizeVector inputImageDims;
-        /** Stores input image **/
 
-        /** Iterating over all input blobs **/
+        // Iterating over all input blobs
         for (auto& item : inputsInfo) {
-            /** Working with first input tensor that stores image **/
+            // Working with first input tensor that stores image
             if (item.second->getInputData()->getTensorDesc().getDims().size() == 4) {
                 imageInputName = item.first;
 
@@ -151,7 +138,7 @@ int main(int argc, char* argv[]) {
 
                 slog::info << "Batch size is " << std::to_string(network.getBatchSize()) << slog::endl;
 
-                /** Creating first input blob **/
+                // Creating first input blob
                 Precision inputPrecision = Precision::U8;
                 item.second->setPrecision(inputPrecision);
             } else if (item.second->getInputData()->getTensorDesc().getDims().size() == 2) {
@@ -170,7 +157,6 @@ int main(int argc, char* argv[]) {
             inputInfo = inputsInfo.begin()->second;
         }
         // --------------------------- Prepare output blobs
-        // -------------------------------------------------
         slog::info << "Preparing output blobs" << slog::endl;
 
         OutputsDataMap outputsInfo(network.getOutputsInfo());
@@ -212,27 +198,21 @@ int main(int argc, char* argv[]) {
             throw std::logic_error("Incorrect output dimensions for SSD model");
         }
 
-        /** Set the precision of output data provided by the user, should be called
-         * before load of the network to the device **/
+        // Set the precision of output data provided by the user, should be called
+        // before load of the network to the device
         outputInfo->setPrecision(Precision::FP32);
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 4. Loading model to the device
-        // ------------------------------------------
+        // Step 4. Loading model to the device
         slog::info << "Loading model to the device" << slog::endl;
 
         ExecutableNetwork executable_network = ie.LoadNetwork(network, FLAGS_d, parseConfig(FLAGS_config));
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 5. Create infer request
-        // -------------------------------------------------
+        // Step 5. Create infer request
         slog::info << "Create infer request" << slog::endl;
         InferRequest infer_request = executable_network.CreateInferRequest();
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 6. Prepare input
-        // --------------------------------------------------------
-        /** Collect images data ptrs **/
+        // Step 6. Prepare input
+        // Collect images data ptrs
         std::vector<std::shared_ptr<unsigned char>> imagesData, originalImagesData;
         std::vector<size_t> imageWidths, imageHeights;
         for (auto& i : images) {
@@ -241,7 +221,7 @@ int main(int argc, char* argv[]) {
                 slog::warn << "Image " + i + " cannot be read!" << slog::endl;
                 continue;
             }
-            /** Store image data **/
+            // Store image data
             std::shared_ptr<unsigned char> originalData(reader->getData());
             std::shared_ptr<unsigned char> data(
                 reader->getData(inputInfo->getTensorDesc().getDims()[3], inputInfo->getTensorDesc().getDims()[2]));
@@ -265,11 +245,10 @@ int main(int argc, char* argv[]) {
             slog::warn << "Number of images to be processed is " << std::to_string(batchSize) << slog::endl;
         }
 
-        /** Creating input blob **/
+        // Creating input blob
         Blob::Ptr imageInput = infer_request.GetBlob(imageInputName);
 
-        /** Filling input tensor with images. First b channel, then g and r channels
-         * **/
+        // Filling input tensor with images. First b channel, then g and r channels
         MemoryBlob::Ptr mimage = as<MemoryBlob>(imageInput);
         if (!mimage) {
             slog::err << "We expect image blob to be inherited from MemoryBlob, but "
@@ -278,8 +257,7 @@ int main(int argc, char* argv[]) {
                       << slog::endl;
             return 1;
         }
-        // locked memory holder should be alive all time while access to its buffer
-        // happens
+        // locked memory holder should be alive all time while access to its buffer happens
         auto minputHolder = mimage->wmap();
 
         size_t num_channels = mimage->getTensorDesc().getDims()[1];
@@ -287,14 +265,12 @@ int main(int argc, char* argv[]) {
 
         unsigned char* data = minputHolder.as<unsigned char*>();
 
-        /** Iterate over all input images limited by batch size  **/
+        // Iterate over all input images limited by batch size
         for (size_t image_id = 0; image_id < std::min(imagesData.size(), batchSize); ++image_id) {
-            /** Iterate over all pixel in image (b,g,r) **/
+            // Iterate over all pixel in image (b,g,r)
             for (size_t pid = 0; pid < image_size; pid++) {
-                /** Iterate over all channels **/
+                // Iterate over all channels
                 for (size_t ch = 0; ch < num_channels; ++ch) {
-                    /**          [images stride + channels stride + pixel id ] all in
-                     * bytes            **/
                     data[image_id * image_size * num_channels + ch * image_size + pid] =
                         imagesData.at(image_id).get()[pid * num_channels + ch];
                 }
@@ -305,7 +281,7 @@ int main(int argc, char* argv[]) {
             Blob::Ptr input2 = infer_request.GetBlob(imInfoInputName);
             auto imInfoDim = inputsInfo.find(imInfoInputName)->second->getTensorDesc().getDims()[1];
 
-            /** Fill input tensor with values **/
+            // Fill input tensor with values
             MemoryBlob::Ptr minput2 = as<MemoryBlob>(input2);
             if (!minput2) {
                 slog::err << "We expect input2 blob to be inherited from MemoryBlob, "
@@ -314,8 +290,7 @@ int main(int argc, char* argv[]) {
                           << slog::endl;
                 return 1;
             }
-            // locked memory holder should be alive all time while access to its
-            // buffer happens
+            // locked memory holder should be alive all time while access to its buffer happens
             auto minput2Holder = minput2->wmap();
             float* p = minput2Holder.as<PrecisionTrait<Precision::FP32>::value_type*>();
 
@@ -329,16 +304,12 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 7. Do inference
-        // ---------------------------------------------------------
+        // Step 7. Do inference
         slog::info << "Start inference" << slog::endl;
         infer_request.Infer();
-        // -----------------------------------------------------------------------------------------------------
 
-        // --------------------------- Step 8. Process output
-        // -------------------------------------------------------
+        // Step 8. Process output
         slog::info << "Processing output blobs" << slog::endl;
 
         const Blob::Ptr output_blob = infer_request.GetBlob(outputName);
@@ -347,15 +318,14 @@ int main(int argc, char* argv[]) {
             throw std::logic_error("We expect output to be inherited from MemoryBlob, "
                                    "but by fact we were not able to cast output to MemoryBlob");
         }
-        // locked memory holder should be alive all time while access to its buffer
-        // happens
+        // locked memory holder should be alive all time while access to its buffer happens
         auto moutputHolder = moutput->rmap();
         const float* detection = moutputHolder.as<const PrecisionTrait<Precision::FP32>::value_type*>();
 
         std::vector<std::vector<int>> boxes(batchSize);
         std::vector<std::vector<int>> classes(batchSize);
 
-        /* Each detection has image_id that denotes processed image */
+        // Each detection has image_id that denotes processed image
         for (int curProposal = 0; curProposal < maxProposalCount; curProposal++) {
             auto image_id = static_cast<int>(detection[curProposal * objectSize + 0]);
             if (image_id < 0) {
@@ -374,7 +344,7 @@ int main(int argc, char* argv[]) {
                       << " batch id : " << image_id;
 
             if (confidence > 0.5) {
-                /** Drawing only objects with >50% probability **/
+                // Drawing only objects with >50% probability
                 classes[image_id].push_back(label);
                 boxes[image_id].push_back(xmin);
                 boxes[image_id].push_back(ymin);
@@ -402,7 +372,6 @@ int main(int argc, char* argv[]) {
                 throw std::logic_error(std::string("Can't create a file: ") + image_path);
             }
         }
-        // -----------------------------------------------------------------------------------------------------
     } catch (const std::exception& error) {
         slog::err << error.what() << slog::endl;
         return 1;
@@ -411,10 +380,5 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    slog::info << "Execution successful" << slog::endl;
-    slog::info << slog::endl
-               << "This sample is an API example, for any performance measurements "
-                  "please use the dedicated benchmark_app tool"
-               << slog::endl;
     return 0;
 }
