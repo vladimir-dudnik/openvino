@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <gflags/gflags.h>
-
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "gflags/gflags.h"
 
 /* thickness of a line (in pixels) to be used for bounding boxes */
 #define BBOX_THICKNESS 2

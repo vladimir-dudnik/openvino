@@ -3,12 +3,15 @@
 //
 
 #include <algorithm>
-#include <inference_engine.hpp>
 #include <map>
 #include <memory>
-#include <ngraph/ngraph.hpp>
 #include <string>
 #include <vector>
+
+// clang-format off
+#include "inference_engine.hpp"
+#include "ngraph/ngraph.hpp"
+// clang-format on
 
 #define CUSTOM_RELU_TYPE "CustomReLU"
 

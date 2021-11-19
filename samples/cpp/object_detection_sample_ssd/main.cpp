@@ -10,14 +10,14 @@
 #include <vector>
 
 // clang-format off
-#include <inference_engine.hpp>
-#include <ngraph/ngraph.hpp>
+#include "inference_engine.hpp"
+#include "ngraph/ngraph.hpp"
 
-#include <format_reader_ptr.h>
-#include <gflags/gflags.h>
-#include <samples/args_helper.hpp>
-#include <samples/common.hpp>
-#include <samples/slog.hpp>
+#include "gflags/gflags.h"
+#include "samples/args_helper.hpp"
+#include "samples/common.hpp"
+#include "samples/slog.hpp"
+#include "format_reader_ptr.h"
 
 #include "object_detection_sample_ssd.h"
 // clang-format on

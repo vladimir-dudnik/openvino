@@ -252,7 +252,7 @@ int main(int argc, char* argv[]) {
         OPENVINO_ASSERT(output_shape.size() == 2, "Incorrect output dimensions for LeNet");
 
         const auto classCount = output_shape[1];
-        OPENVINO_ASSERT(classCount <= 10, "Incorrect number of output classes for LeNet model");
+        OPENVINO_ASSERT(classCount <= LENET_NUM_CLASSES, "Incorrect number of output classes for LeNet model");
 
         // -------- Step 3. Apply preprocessing --------
         const Layout tensor_layout{"NHWC"};
@@ -266,14 +266,14 @@ int main(int argc, char* argv[]) {
                 // - precision of tensor is supposed to be 'u8'
                 // - layout of data is 'NHWC'
                 tensor(InputTensorInfo().
-                    set_layout(tensor_layout).
-                    set_element_type(element::u8)).
+                    set_element_type(element::u8).
+                    set_layout(tensor_layout)).
                 // 3) Adding explicit preprocessing steps:
                 // - convert u8 to f32
                 // - convert layout to 'NCHW' (from 'NHWC' specified above at tensor layout)
                 preprocess(PreProcessSteps().
-                    convert_element_type(ov::element::f32). // WA for CPU plugin
-                    convert_layout("NCHW")). // WA for CPU plugin
+                    convert_element_type(ov::element::f32).
+                    convert_layout("NCHW")).
                 // 4) Here we suppose model has 'NCHW' layout for input
                 network(InputNetworkInfo().
                     set_layout("NCHW"))).
@@ -324,7 +324,7 @@ int main(int argc, char* argv[]) {
 
         // Prints formatted classification results
         ClassificationResult classification_result(output_tensor,
-                                                   lenet_labels,
+                                                   lenet_labels, // in this sample images have the same names as labels
                                                    batch_size,
                                                    N_TOP_RESULTS,
                                                    lenet_labels);

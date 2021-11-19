@@ -23,7 +23,7 @@ using namespace ov::preprocess;
 int main(int argc, char* argv[]) {
     try {
         // -------- Get OpenVINO runtime version --------
-        slog::info << ov::get_openvino_version() << slog::endl;
+        slog::info << *ov::get_openvino_version() << slog::endl;
 
         // --------------------------- Parsing and validation of input arguments
         if (argc != 5) {
@@ -97,8 +97,8 @@ int main(int argc, char* argv[]) {
                 // - convert u8 to f32
                 // - convert layout to 'NCHW' (from 'NHWC' specified above at tensor layout)
                 preprocess(PreProcessSteps().
-                    convert_element_type(ov::element::f32). // WA for CPU plugin
-                    convert_layout("NCHW")). // WA for CPU plugin
+                    convert_element_type(ov::element::f32).
+                    convert_layout("NCHW")).
                 // 4) Here we suppose model has 'NCHW' layout for input
                 network(InputNetworkInfo().
                     set_layout("NCHW"))).
