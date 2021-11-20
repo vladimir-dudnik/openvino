@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
         // This sample covers certain topology and cannot be generalized for any
         // object detection one
         // ------------------------------ Get Inference Engine version
-        slog::info << "InferenceEngine: " << *GetInferenceEngineVersion() << "\n";
+        slog::info << "InferenceEngine: " << GetInferenceEngineVersion() << "\n";
 
         // --------------------------- Parsing and validation of input arguments
         if (!ParseAndCheckCommandLine(argc, argv)) {
